@@ -2,6 +2,17 @@
 // Save to: SD Card/apps/Scripts/morse_rf.js
 // Uses event_loop GUI API (post-Oct-2024 Momentum firmware)
 
+// Manual lowercase since to_lower_case() is not in this runtime
+function lower(s) {
+    let out = "";
+    for (let i = 0; i < s.length; i++) {
+        let c = s.at(i);
+        if (c >= 65 && c <= 90) out += chr(c + 32);
+        else out += chr(c);
+    }
+    return out;
+}
+
 let eventLoop = require("event_loop");
 let gui = require("gui");
 let submenuView = require("gui/submenu");
@@ -229,7 +240,7 @@ eventLoop.subscribe(views.freqInput.input, function (_sub, text, gui, views) {
 }, gui, views);
 
 eventLoop.subscribe(views.msgInput.input, function (_sub, text, gui, views) {
-    write_file(cfg_msg, to_lower_case(text));
+    write_file(cfg_msg, lower(text));
     notify.success();
     gui.viewDispatcher.switchTo(views.mainMenu);
 }, gui, views);
