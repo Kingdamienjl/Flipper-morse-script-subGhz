@@ -137,14 +137,14 @@ function build_sub_file(message, freq_hz, delay_ms, repeat_count) {
     // Build .sub file content
     let out = "Filetype: Flipper SubGhz RAW File\n";
     out = out + "Version: 1\n";
-    out = out + "Frequency: " + ("" + freq_hz) + "\n";
+    out = out + "Frequency: " + JSON.stringify(freq_hz) + "\n";
     out = out + "Preset: FuriHalSubGhzPresetOok650Async\n";
     out = out + "Protocol: RAW\n";
 
     let line = "RAW_Data:";
     let count = 0;
     for (let i = 0; i < raw.length; i++) {
-        line = line + " " + ("" + raw[i]);
+        line = line + " " + JSON.stringify(raw[i]);
         count++;
         if (count >= 500) {
             out = out + line + "\n";
@@ -163,7 +163,7 @@ function send_morse() {
     let delay_ms = parseInt(read_file(cfg_delay, "60"));
     let repeat = parseInt(read_file(cfg_repeat, "0"));
 
-    print("Msg: " + message + " @ " + ("" + freq) + "Hz");
+    print("Msg: " + message + " @ " + JSON.stringify(freq) + "Hz");
 
     let content = build_sub_file(message, freq, delay_ms, repeat);
     write_file(sub_file, content);
