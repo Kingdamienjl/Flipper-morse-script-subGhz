@@ -172,6 +172,8 @@ function build_sub_file(message, freq_hz, delay_ms, repeat_count) {
     return out;
 }
 
+let radio_setup = false;
+
 function send_morse() {
     let freq_s = read_file(cfg_freq, "433920000");
     let message = read_file(cfg_msg, "sos");
@@ -183,7 +185,10 @@ function send_morse() {
     let content = build_sub_file(message, parseInt(freq_s), parseInt(delay_s), parseInt(repeat_s));
     write_file(sub_file, content);
 
-    subghz.setup();
+    if (!radio_setup) {
+        subghz.setup();
+        radio_setup = true;
+    }
     notify.blink("green", "short");
     print("TX...");
 
