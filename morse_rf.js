@@ -7,8 +7,11 @@ function lower(s) {
     let out = "";
     for (let i = 0; i < s.length; i++) {
         let c = s.at(i);
-        if (c >= 65 && c <= 90) out += chr(c + 32);
-        else out += chr(c);
+        if (c >= 65 && c <= 90) {
+            out = out + chr(c + 32);
+        } else {
+            out = out + chr(c);
+        }
     }
     return out;
 }
@@ -133,23 +136,23 @@ function build_sub_file(message, freq_hz, delay_ms, repeat_count) {
 
     // Build .sub file content
     let out = "Filetype: Flipper SubGhz RAW File\n";
-    out += "Version: 1\n";
-    out += "Frequency: " + to_string(freq_hz) + "\n";
-    out += "Preset: FuriHalSubGhzPresetOok650Async\n";
-    out += "Protocol: RAW\n";
+    out = out + "Version: 1\n";
+    out = out + "Frequency: " + to_string(freq_hz) + "\n";
+    out = out + "Preset: FuriHalSubGhzPresetOok650Async\n";
+    out = out + "Protocol: RAW\n";
 
     let line = "RAW_Data:";
     let count = 0;
     for (let i = 0; i < raw.length; i++) {
-        line += " " + to_string(raw[i]);
+        line = line + " " + to_string(raw[i]);
         count++;
         if (count >= 500) {
-            out += line + "\n";
+            out = out + line + "\n";
             line = "RAW_Data:";
             count = 0;
         }
     }
-    if (count > 0) out += line + "\n";
+    if (count > 0) { out = out + line + "\n"; }
 
     return out;
 }
@@ -208,7 +211,7 @@ let views = {
         maxLength: 5,
     }),
     repeatInput: textInputView.makeWith({
-        header: "0=once 1+=repeat",
+        header: "0=once 1=repeat",
         defaultText: def_repeat,
         defaultTextClear: true,
         minLength: 1,
