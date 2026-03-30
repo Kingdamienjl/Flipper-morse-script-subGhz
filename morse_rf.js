@@ -76,6 +76,21 @@ let def_msg = read_file(cfg_msg, "sos");
 let def_delay = read_file(cfg_delay, "60");
 let def_repeat = read_file(cfg_repeat, "0");
 
+// Number to string - manual conversion for mJS strict mode
+function num2str(n) {
+    if (n === 0) { return "0"; }
+    let neg = false;
+    if (n < 0) { neg = true; n = -n; }
+    let s = "";
+    while (n > 0) {
+        let d = n % 10;
+        s = chr(48 + d) + s;
+        n = (n - d) / 10;
+    }
+    if (neg) { s = "-" + s; }
+    return s;
+}
+
 // Build a Flipper SubGhz RAW .sub file from morse-encoded message
 // Timing: dot=1unit, dash=3units, intra-char gap=1unit,
 //         inter-char gap=3units, word gap=7units
@@ -137,14 +152,14 @@ function build_sub_file(message, freq_hz, delay_ms, repeat_count) {
     // Build .sub file content
     let out = "Filetype: Flipper SubGhz RAW File\n";
     out = out + "Version: 1\n";
-    out = out + "Frequency: " + JSON.stringify(freq_hz) + "\n";
+    out = out + "Frequency: " + num2str(freq_hz) + "\n";
     out = out + "Preset: FuriHalSubGhzPresetOok650Async\n";
     out = out + "Protocol: RAW\n";
 
     let line = "RAW_Data:";
     let count = 0;
     for (let i = 0; i < raw.length; i++) {
-        line = line + " " + JSON.stringify(raw[i]);
+        line = line + " " + num2str(raw[i]);
         count++;
         if (count >= 500) {
             out = out + line + "\n";
@@ -158,14 +173,14 @@ function build_sub_file(message, freq_hz, delay_ms, repeat_count) {
 }
 
 function send_morse() {
-    let freq = parseInt(read_file(cfg_freq, "433920000"));
+    let freq_s = read_file(cfg_freq, "433920000");
     let message = read_file(cfg_msg, "sos");
-    let delay_ms = parseInt(read_file(cfg_delay, "60"));
-    let repeat = parseInt(read_file(cfg_repeat, "0"));
+    let delay_s = read_file(cfg_delay, "60");
+    let repeat_s = read_file(cfg_repeat, "0");
 
-    print("Msg: " + message + " @ " + JSON.stringify(freq) + "Hz");
+    print("Msg: " + message + " @ " + freq_s + "Hz");
 
-    let content = build_sub_file(message, freq, delay_ms, repeat);
+    let content = build_sub_file(message, parseInt(freq_s), parseInt(delay_s), parseInt(repeat_s));
     write_file(sub_file, content);
 
     subghz.setup();
