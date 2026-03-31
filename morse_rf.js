@@ -73,7 +73,7 @@ function write_file(path, text) {
 // Load saved config or defaults
 let def_freq = read_file(cfg_freq, "433920000");
 let def_msg = read_file(cfg_msg, "sos");
-let def_delay = read_file(cfg_delay, "60");
+let def_delay = read_file(cfg_delay, "200");
 let def_repeat = read_file(cfg_repeat, "0");
 
 // Number to string - manual conversion for mJS strict mode
