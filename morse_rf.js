@@ -177,7 +177,7 @@ let radio_setup = false;
 function send_morse() {
     let freq_s = read_file(cfg_freq, "433920000");
     let message = read_file(cfg_msg, "sos");
-    let delay_s = read_file(cfg_delay, "60");
+    let delay_s = read_file(cfg_delay, "200");
     let repeat_s = read_file(cfg_repeat, "0");
 
     print("Msg: " + message + " @ " + freq_s + "Hz");
@@ -192,14 +192,9 @@ function send_morse() {
     notify.blink("green", "short");
     print("TX...");
 
-    let result = subghz.transmitFile(sub_file);
-    if (result === false) {
-        print("TX FAIL");
-        notify.error();
-    } else {
-        print("TX OK");
-        notify.success();
-    }
+    subghz.transmitFile(sub_file);
+    print("TX OK");
+    notify.success();
 }
 
 // --- GUI Setup ---
@@ -210,11 +205,11 @@ let views = {
         ["Send signal", "Set frequency", "Set message", "Set delay (ms)", "Toggle repeat"]
     ),
     freqInput: textInputView.makeWith({
-        header: "Frequency (Hz)",
+        header: "Freq Hz eg 433920000",
         defaultText: def_freq,
         defaultTextClear: true,
-        minLength: 6,
-        maxLength: 15,
+        minLength: 9,
+        maxLength: 10,
     }),
     msgInput: textInputView.makeWith({
         header: "Message",
