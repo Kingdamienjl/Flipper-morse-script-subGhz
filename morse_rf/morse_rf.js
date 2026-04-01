@@ -1,5 +1,5 @@
 // Morse Code RF Transmitter - Flipper Zero (Momentum)
-// Save to: SD Card/apps/Scripts/morse_rf.js
+// Save to: SD Card/apps/Scripts/morse_rf.js (copy this file only)
 // Uses event_loop GUI API (post-Oct-2024 Momentum firmware)
 
 // Manual lowercase since to_lower_case() is not in this runtime
