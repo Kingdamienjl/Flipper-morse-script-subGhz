@@ -1,51 +1,85 @@
-# BLE Connect - Flipper Zero Native App
+# BLE Connect v0.2 - Flipper Zero Native App
 
-Native C application (.fap) for BLE device scanning, connection, and MAC address spoofing on the Flipper Zero.
+Full-featured BLE toolkit for the Flipper Zero — beacon spam, MAC address spoofing, and configurable beacon settings with a polished multi-view GUI.
 
-**Status: Skeleton / Work in Progress** - Menu and GUI framework are functional. BLE operations are stubbed with TODO documentation for each feature.
-
-## Planned Features
+## Features
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Scan Devices | Stub | Discover nearby BLE devices (name, MAC, RSSI) |
-| Connect | Stub | Initiate BLE connection to a target device |
-| Spoof MAC | Stub | Change Flipper's BLE address to impersonate a device |
-| Spam Pairing | Stub | Send repeated pairing requests to a target |
+| BLE Spam Attack | **Working** | Broadcast spoofed BLE ads (Apple, Android, Windows) with randomized MACs |
+| MAC Address Spoof | **Working** | Set custom MAC address for beacon advertising |
+| Beacon Settings | **Working** | Configure TX power (-40dBm to 0dBm) and interval (20ms-1000ms) |
+| Scan Devices | Planned | BLE device discovery (requires HCI central mode) |
+| Connect to Device | Planned | BLE connection initiation (requires central mode) |
 
-## Why Native C Instead of JavaScript?
+## Spam Attack Modes
 
-The Flipper Zero JS engine only exposes `blebeacon` for one-way BLE advertising. To scan, connect, or interact with BLE devices, we need direct access to the STM32WB55 BLE HAL via native C code.
+| Mode | Target | Protocol | Effect |
+|------|--------|----------|--------|
+| Apple | iOS/macOS | Continuity (Proximity Pairing) | AirPods/AppleTV/Beats pairing popups |
+| Android | Android | Google Fast Pair | "Device found nearby" notifications |
+| Windows | Windows 10/11 | Microsoft Swift Pair | "New Bluetooth device" popups |
+| All | Everything | Cycles all protocols | Rotates through all device types |
+
+### Spoofed Devices
+- **Apple (10 types)**: AirPods, AirPods Pro, AirPods Max, AirPods Gen3, Beats Fit Pro, Beats Solo Pro, AppleTV Setup, AppleTV Keyboard, New Device, Transfer Number
+- **Android (8 types)**: Pixel Buds, Pixel Buds Pro, Galaxy Buds2, Galaxy Buds Live, Galaxy Buds Pro, Sony WF-1000XM4, JBL Tune Flex, Nothing Ear 1
+- **Windows**: Generic Swift Pair device
+
+## GUI Structure
+
+```
+Main Menu
+├── BLE Spam Attack
+│   ├── Apple (iOS popups)
+│   ├── Android (Fast Pair)
+│   ├── Windows (Swift Pair)
+│   ├── All Devices
+│   └── Stop Spam
+├── MAC Address Spoof (hex input: AABBCCDDEEFF)
+├── Scan Devices (info screen - planned feature)
+├── Beacon Settings
+│   ├── TX Power: -40dBm to 0dBm
+│   └── Interval: 20ms to 1000ms
+└── About
+```
+
+The spam status screen shows real-time packet count, current mode, and which device is being spoofed. Press BACK to stop.
 
 ## Building
 
-Requires [ufbt](https://github.com/flipperdevices/flipperzero-ufbt) (micro Flipper Build Tool):
+Requires [ufbt](https://github.com/flipperdevices/flipperzero-ufbt):
 
 ```bash
-# Install ufbt (one-time)
 pip install ufbt
 
-# Build the app
 cd ble_connect/
-ufbt
-
-# Build and deploy to connected Flipper
-ufbt launch
+ufbt          # Build .fap
+ufbt launch   # Build + deploy to connected Flipper
 ```
 
-The compiled `.fap` will be in `dist/ble_connect.fap`. Copy it to your Flipper's SD card at `apps/Bluetooth/`.
+Output: `dist/ble_connect.fap` — copy to Flipper SD card at `apps/Bluetooth/`
 
-## Technical Notes
+## Technical Details
 
-- The Flipper Zero uses an **STM32WB55RG** with dual cores: Cortex-M4 (app) + Cortex-M0+ (BLE stack)
-- BLE operations go through `furi_hal_bt` APIs which communicate with the M0+ core
-- Scanning requires temporarily stopping the default BLE profile
-- MAC spoofing alone does **not** bypass BLE bonding (bonded devices verify via IRK encryption keys)
-- See `ble_connect.c` for detailed TODO comments on each feature's implementation approach
+- Uses `furi_hal_bt_extra_beacon_*` API for BLE advertising (does not interfere with Flipper's main BLE connection)
+- `FuriTimer` for periodic beacon cycling during spam
+- `furi_hal_random_fill_buf()` for cryptographic-quality random MACs
+- ViewDispatcher with 10 views: 2x Submenu, 4x Widget, VariableItemList, TextInput, Loading, Popup
+- Proper memory management — all views allocated/freed cleanly
+- 16KB stack for BLE operations
+
+## Limitations
+
+- **BLE Scanning** requires HCI central mode which is not publicly exposed in the Flipper BLE HAL. The STM32WB55 hardware supports it, but the firmware's BLE stack only operates in peripheral mode. See [Wendigo](https://github.com/chris-bc/wendigo) for experimental scanning.
+- **BLE Connections** similarly require central mode. Cannot initiate connections to other devices.
+- **MAC Spoofing** changes the beacon advertisement address only. It does NOT bypass BLE bonding (paired devices verify via encrypted IRK keys).
+- **iOS 17.2+** throttles BLE spam notifications. Older iOS versions are more affected.
 
 ## References
 
-- [Flipper Zero BLE HAL](https://developer.flipper.net/flipperzero/doxygen/furi__hal__bt_8h.html)
-- [Wendigo - Flipper BLE Scanner](https://github.com/chris-bc/wendigo)
-- [Flipper BLE MAC Spoofing](https://salmg.net/2023/02/03/flipper-zero-changing-bluetooth-mac-address/)
+- [Flipper BLE HAL](https://developer.flipper.net/flipperzero/doxygen/furi__hal__bt_8h.html)
+- [Extra Beacon API](https://developer.flipper.net/flipperzero/doxygen/extra__beacon_8h.html)
+- [Wendigo - BLE Scanner](https://github.com/chris-bc/wendigo)
+- [Apple BLE Spam](https://github.com/noproto/apple_ble_spam_ofw)
 - [ufbt Documentation](https://github.com/flipperdevices/flipperzero-ufbt)
